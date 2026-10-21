@@ -28,6 +28,5 @@ dist-ssr
 .env
 
 .env.local
-# Local Netlify folder
-.netlify
-.agents
+.neon
+.agents 
