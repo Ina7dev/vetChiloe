@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import * as controller from '../controllers/pacientes.controller.js';
+import { obtenerPacientes, crearPaciente, eliminarPaciente } from '../controllers/pacientes.controller.js';
 
 const router = Router();
 
-router.get('/', controller.listar);
-router.post('/', controller.crear);
+router.get('/', obtenerPacientes);
+router.post('/', crearPaciente);
+router.delete('/:id', eliminarPaciente);
 
 export default router;

@@ -10,16 +10,17 @@ function FormularioPaciente({ agregarPaciente, volverALista }) {
   const [nombreDueno, setNombreDueno] = useState('');
   const [telefono, setTelefono] = useState('');
   
-  // Estado para la foto cargada y el estado del arrastre
+  // Estado para la foto cargada, estado del arrastre y estado de envío
   const [foto, setFoto] = useState(null);
   const [arrastrando, setArrastrando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   // Procesar archivo seleccionado o arrastrado
   const procesarArchivo = (file) => {
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = () => {
-        setFoto(reader.result); // Convierte a Base64 para vista previa inmediata
+        setFoto(reader.result); // Convierte a Base64 para vista previa e inserción en BD
       };
       reader.readAsDataURL(file);
     } else {
@@ -52,7 +53,7 @@ function FormularioPaciente({ agregarPaciente, volverALista }) {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nombre.trim() || !numeroAtencion.trim() || !foto) {
@@ -61,7 +62,6 @@ function FormularioPaciente({ agregarPaciente, volverALista }) {
     }
 
     const nuevo = {
-      id: Date.now(),
       nombre: nombre.trim(),
       especie,
       raza: raza.trim() || 'Mestizo',
@@ -72,8 +72,15 @@ function FormularioPaciente({ agregarPaciente, volverALista }) {
       foto: foto
     };
 
-    agregarPaciente(nuevo);
-    volverALista();
+    try {
+      setGuardando(true);
+      await agregarPaciente(nuevo); // Llama a la función asíncrona de App.jsx
+      volverALista();
+    } catch (error) {
+      console.error("Error al registrar paciente:", error);
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -214,8 +221,12 @@ function FormularioPaciente({ agregarPaciente, volverALista }) {
         </div>
 
         <div className="acciones-form">
-          <button type="button" className="btn-cancelar" onClick={volverALista}>Cancelar</button>
-          <button type="submit" className="btn-guardar-paciente">Guardar Nuevo Paciente</button>
+          <button type="button" className="btn-cancelar" onClick={volverALista} disabled={guardando}>
+            Cancelar
+          </button>
+          <button type="submit" className="btn-guardar-paciente" disabled={guardando}>
+            {guardando ? 'Guardando en Supabase...' : 'Guardar Nuevo Paciente'}
+          </button>
         </div>
       </form>
     </div>

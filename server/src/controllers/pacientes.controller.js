@@ -1,19 +1,31 @@
-import * as pacienteService from '../services/pacientes.service.js';
+import { PacientesService } from '../services/pacientes.service.js';
 
-export const listar = async (req, res) => {
+const service = new PacientesService();
+
+export const obtenerPacientes = async (req, res) => {
   try {
-    const lista = await pacienteService.listarPacientes();
-    res.status(200).json(lista);
+    const pacientes = await service.obtenerTodos();
+    res.json(pacientes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-export const crear = async (req, res) => {
+export const crearPaciente = async (req, res) => {
   try {
-    const creado = await pacienteService.registrarPaciente(req.body);
-    res.status(201).json(creado);
+    const nuevoPaciente = await service.crear(req.body);
+    res.status(201).json(nuevoPaciente);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const eliminarPaciente = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const eliminado = await service.eliminar(id);
+    res.json(eliminado);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

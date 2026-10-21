@@ -7,6 +7,7 @@ import HistorialClinico from './components/HistorialClinico';
 import Hospitalizacion from './components/Hospitalizacion';
 import FloatingActionButton from './components/FloatingActionButton';
 import { obtenerPacientes, registrarPaciente } from './services/pacienteService';
+import { obtenerHospitalizados, ingresarHospitalizacion, darDeAltaPaciente } from './services/hospitalizacionService';
 import './App.css';
 
 function App() {
@@ -14,22 +15,50 @@ function App() {
   const [pacienteSeleccionadoHistorial, setPacienteSeleccionadoHistorial] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pacientes, setPacientes] = useState([]);
+  const [hospitalizados, setHospitalizados] = useState([]);
 
-  // 1. Carga inicial de pacientes desde el backend (Express en http://localhost:3001/api/pacientes)
+  // 1. Carga inicial de datos desde la API
   useEffect(() => {
+    // Cargar Pacientes
     obtenerPacientes()
       .then((data) => setPacientes(data))
-      .catch((err) => console.error("Error al cargar pacientes desde el backend:", err));
+      .catch((err) => console.error("Error al cargar pacientes:", err));
+
+    // Cargar Hospitalizados
+    obtenerHospitalizados()
+      .then((data) => setHospitalizados(data))
+      .catch((err) => console.error("Error al cargar hospitalizaciones:", err));
   }, []);
 
-  // 2. Registrar paciente mediante POST
+  // 2. Registrar nuevo paciente
   const agregarPaciente = async (nuevo) => {
     try {
       const pacienteCreado = await registrarPaciente(nuevo);
       setPacientes((prev) => [pacienteCreado, ...prev]);
-      setIsModalOpen(false); // Cierra el modal flotante automáticamente
+      setIsModalOpen(false);
     } catch (err) {
       alert(err.message || "Error al registrar el paciente");
+    }
+  };
+
+  // 3. Registrar nuevo paciente a hospitalización
+  const handleAgregarHospitalizado = async (nuevoHosp) => {
+    try {
+      await ingresarHospitalizacion(nuevoHosp);
+      const actualizados = await obtenerHospitalizados();
+      setHospitalizados(actualizados);
+    } catch (err) {
+      alert(err.message || "Error al ingresar a hospitalización");
+    }
+  };
+
+  // 4. Dar de alta a un paciente
+  const handleDarDeAlta = async (id) => {
+    try {
+      await darDeAltaPaciente(id);
+      setHospitalizados((prev) => prev.filter((h) => h.id !== id));
+    } catch (err) {
+      alert(err.message || "Error al dar de alta al paciente");
     }
   };
 
@@ -55,7 +84,12 @@ function App() {
         )}
         
         {pestanaActiva === 'hospitalizacion' && (
-          <Hospitalizacion pacientes={pacientes} />
+          <Hospitalizacion 
+            pacientes={pacientes} 
+            hospitalizados={hospitalizados}
+            agregarHospitalizado={handleAgregarHospitalizado}
+            darDeAlta={handleDarDeAlta}
+          />
         )}
         
         {pestanaActiva === 'historial' && (

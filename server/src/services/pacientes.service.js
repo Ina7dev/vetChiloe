@@ -1,25 +1,37 @@
-import * as repo from '../repositories/pacientes.repository.js';
+const API_URL = 'http://localhost:3001/api/pacientes';
 
-const ESPECIES_VALIDAS = ['Felino', 'Canino', 'Perro', 'Gato'];
-
-export const registrarPaciente = async (datos) => {
-  if (!datos.especie || !ESPECIES_VALIDAS.includes(datos.especie)) {
-    throw new Error('Especie no válida. Debe ser Felino o Canino');
+export const obtenerPacientes = async () => {
+  const respuesta = await fetch(API_URL);
+  if (!respuesta.ok) {
+    throw new Error('Error al consultar la lista de pacientes');
   }
-
-  const numeroAtencion = `2026-${Math.floor(100 + Math.random() * 900)}`;
-  
-  const nuevo = {
-    id: Date.now(),
-    nombre: datos.nombre,
-    especie: datos.especie,
-    numero_atencion: numeroAtencion,
-    foto: datos.foto || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&auto=format&fit=crop'
-  };
-
-  return await repo.guardar(nuevo);
+  return await respuesta.json();
 };
 
-export const listarPacientes = async () => {
-  return await repo.obtenerTodos();
+export const registrarPaciente = async (nuevoPaciente) => {
+  const respuesta = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(nuevoPaciente),
+  });
+
+  if (!respuesta.ok) {
+    throw new Error('No se pudo guardar la información del paciente');
+  }
+
+  return await respuesta.json();
+};
+
+export const eliminarPaciente = async (id) => {
+  const respuesta = await fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!respuesta.ok) {
+    throw new Error('No se pudo eliminar el paciente');
+  }
+
+  return await respuesta.json();
 };

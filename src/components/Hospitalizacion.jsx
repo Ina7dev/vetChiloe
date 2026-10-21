@@ -5,32 +5,36 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
   const [motivoHospitalizacion, setMotivoHospitalizacion] = useState('');
   const [estadoInicial, setEstadoInicial] = useState('En observación / Estable');
   const [cuidadosEspeciales, setCuidadosEspeciales] = useState('');
+  const [guardando, setGuardando] = useState(false);
 
-  const handleSubmitHospitalizacion = (e) => {
+  const handleSubmitHospitalizacion = async (e) => {
     e.preventDefault();
-    const pacienteBase = pacientes.find(p => p.id === Number(pacienteSeleccionadoId));
 
-    if (!pacienteBase) {
+    const targetId = pacienteSeleccionadoId || pacientes[0]?.id;
+    if (!targetId) {
       alert('Debes seleccionar un paciente registrado.');
       return;
     }
 
     const ingresoHosp = {
-      id: Date.now(),
-      paciente: pacienteBase.nombre,
-      especie: pacienteBase.especie || 'Mascota',
-      tutor: pacienteBase.nombre_dueno || 'Tutor Registrado',
-      contacto: pacienteBase.telefono || '+56 9 ...',
+      paciente_id: Number(targetId),
+      motivo: motivoHospitalizacion.trim(),
       estado: estadoInicial,
-      ultimaRevision: 'Hace un momento',
       cuidados: cuidadosEspeciales.trim() || 'Monitoreo de rutina'
     };
 
-    if (agregarHospitalizado) agregarHospitalizado(ingresoHosp);
-
-    setMotivoHospitalizacion('');
-    setCuidadosEspeciales('');
-    alert(`Paciente ${pacienteBase.nombre} ingresado a hospitalización correctamente.`);
+    try {
+      setGuardando(true);
+      if (agregarHospitalizado) {
+        await agregarHospitalizado(ingresoHosp);
+      }
+      setMotivoHospitalizacion('');
+      setCuidadosEspeciales('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const handleDarDeAlta = (id, nombrePaciente) => {
@@ -41,8 +45,6 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
 
   return (
     <div className="home-dashboard">
-      
-      {/* SECCIÓN SUPERIOR: FORMULARIO DE INGRESO */}
       <section className="bloque-dashboard">
         <div className="cabecera-bloque">
           <h2>Registro de Ingreso a Hospitalización</h2>
@@ -55,7 +57,7 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
               <label htmlFor="pacienteExistente">Seleccionar Paciente Registrado *</label>
               <select 
                 id="pacienteExistente"
-                value={pacienteSeleccionadoId} 
+                value={pacienteSeleccionadoId || pacientes[0]?.id || ''} 
                 onChange={(e) => setPacienteSeleccionadoId(e.target.value)}
               >
                 {pacientes.map((p) => (
@@ -97,7 +99,7 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
               <input 
                 type="text"
                 id="cuidados"
-                placeholder="Ej: Aislamiento, suero fisiológico c/8h, alergia a penicilina..."
+                placeholder="Ej: Aislamiento, suero fisiológico c/8h..."
                 value={cuidadosEspeciales}
                 onChange={(e) => setCuidadosEspeciales(e.target.value)}
               />
@@ -105,14 +107,13 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
           </div>
 
           <div className="acciones-form">
-            <button type="submit" className="btn-guardar-paciente">
-              Ingresar Paciente a Cama
+            <button type="submit" className="btn-guardar-paciente" disabled={guardando}>
+              {guardando ? 'Ingresando...' : 'Ingresar Paciente a Cama'}
             </button>
           </div>
         </form>
       </section>
 
-      {/* SECCIÓN INFERIOR: TABLA MONITOREO Y ALTA */}
       <section className="bloque-dashboard">
         <div className="cabecera-bloque">
           <h2>Pacientes Actualmente Hospitalizados</h2>
@@ -127,7 +128,6 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
                 <th>Especie</th>
                 <th>Tutor / Contacto</th>
                 <th>Estado</th>
-                <th>Última Revisión</th>
                 <th>Cuidados Especiales</th>
                 <th>Acción</th>
               </tr>
@@ -145,7 +145,6 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
                     <td>
                       <span className="badge-estado">{hosp.estado}</span>
                     </td>
-                    <td className="tiempo-texto">{hosp.ultimaRevision}</td>
                     <td className="cuidados-texto">{hosp.cuidados}</td>
                     <td>
                       <button 
@@ -159,7 +158,7 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', color: '#8c7a82' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', color: '#8c7a82' }}>
                     No hay pacientes actualmente en hospitalización.
                   </td>
                 </tr>
@@ -168,7 +167,6 @@ function Hospitalizacion({ pacientes, hospitalizados = [], agregarHospitalizado,
           </table>
         </div>
       </section>
-
     </div>
   );
 }

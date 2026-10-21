@@ -1,25 +1,63 @@
-let pacientesBD = [
-  { 
-    id: 1, 
-    nombre: 'Charkicito', 
-    especie: 'Canino', 
-    numero_atencion: '2026-A1',
-    foto: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&auto=format&fit=crop'
-  },
-  { 
-    id: 2, 
-    nombre: 'Mercedes', 
-    especie: 'Felino', 
-    numero_atencion: '2026-B2',
-    foto: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&auto=format&fit=crop'
+import pool from '../config/db.js';
+
+export class PacientesRepository {
+  async obtenerTodos() {
+    const query = 'SELECT * FROM pacientes ORDER BY id DESC;';
+    const { rows } = await pool.query(query);
+    return rows;
   }
-];
 
-export const obtenerTodos = async () => {
-  return pacientesBD;
-};
+  async obtenerPorId(id) {
+    const query = 'SELECT * FROM pacientes WHERE id = $1;';
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
+  }
 
-export const guardar = async (nuevoPaciente) => {
-  pacientesBD.push(nuevoPaciente);
-  return nuevoPaciente;
-};
+  async crear(paciente) {
+    const { 
+      nombre, 
+      numero_atencion, 
+      especie, 
+      raza, 
+      edad, 
+      nombre_dueno, 
+      telefono, 
+      foto 
+    } = paciente;
+
+    const query = `
+      INSERT INTO pacientes (
+        nombre, 
+        numero_atencion, 
+        especie, 
+        raza, 
+        edad, 
+        nombre_dueno, 
+        telefono, 
+        foto
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *;
+    `;
+
+    const values = [
+      nombre, 
+      numero_atencion, 
+      especie, 
+      raza || 'Mestizo', 
+      edad, 
+      nombre_dueno || 'No registrado', 
+      telefono || 'Sin contacto', 
+      foto
+    ];
+
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+  }
+
+  async eliminar(id) {
+    const query = 'DELETE FROM pacientes WHERE id = $1 RETURNING *;';
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
+  }
+}
