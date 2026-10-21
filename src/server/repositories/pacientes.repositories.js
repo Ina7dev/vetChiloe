@@ -1,24 +1,52 @@
-let pacientes = [
-    {
-        "nombre": "pegamento",
-        "numero_atencion": 1,
-        "especie": "perro",
-        "edad": "12 años ",
-        "raza": "mestizo",
-        "diagnostico": "se cayo y se pego",
-        "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5K9bMLje8lyz6Kpk97MzwOZrh5PAlLXkZoj4-Q8DWKg&s=10"
-    },
-    
-]
+import pool from '../lib/db.js';
 
+const columnas = `
+  id,
+  nombre,
+  numero_atencion,
+  especie,
+  edad,
+  raza,
+  diagnostico,
+  imagen
+`;
 
-export async function getData(){
-    return pacientes;
+function normalizarPaciente(paciente) {
+  return {
+    ...paciente,
+    numero_atencion: String(paciente.numero_atencion),
+  };
+}
+
+export async function getData() {
+  const rows = await pool.query(
+    `SELECT ${columnas} FROM pacientes ORDER BY id`,
+  );
+  return rows.rows.map(normalizarPaciente);
 }
 
 export async function insertData(paciente) {
-  const siguiente = pacientes.reduce((max, p) => Math.max(max, p.numero_atencion), 0) + 1;
-  const nuevo = { ...paciente, numero_atencion: siguiente };
-  pacientes.push(nuevo);
-  return nuevo;
+   const query = `
+      INSERT INTO pacientes (
+        nombre,
+        especie,
+        edad,
+        raza,
+        diagnostico,
+        imagen
+      ) VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING ${columnas}`;
+
+    const values = [
+      paciente.nombre,
+      paciente.especie,
+      paciente.edad,
+      paciente.raza,
+      paciente.diagnostico,
+      paciente.imagen,
+    ];
+
+    const resultado = await pool.query(query, values);
+    return normalizarPaciente(resultado.rows[0]);
+  
 }
