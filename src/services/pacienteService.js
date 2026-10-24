@@ -1,4 +1,4 @@
-﻿const API_URL = 'http://localhost:3000/api/pacientes';
+﻿const API_URL = import.meta.env.VITE_API_URL || 'https://vetchiloe.onrender.com/api/pacientes';
 
 export const pacienteService = {
   obtenerPacientes: async () => {
@@ -26,3 +26,5 @@ export const pacienteService = {
     return await res.json();
   }
 };
+
+export default pacienteService;
