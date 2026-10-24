@@ -81,14 +81,14 @@ export function FormularioPaciente({ onAgregarPaciente, onCancelar }) {
       return;
     }
 
-    // Si no subió foto, asigna automáticamente la foto de archivo según la especie
-    const fotoFinal = fotoPreview || FOTOS_DEFAULT[especie] || FOTOS_DEFAULT.Felino;
+    // Usar la foto oficial por defecto para URLs seguras en la BD de Neon
+    const fotoFinal = FOTOS_DEFAULT[especie] || FOTOS_DEFAULT.Felino;
 
     const a = parseInt(edadAnios, 10) || 0;
     const m = parseInt(edadMeses, 10) || 0;
+    const descDiagnostico = diagnostico.trim() || 'Control de rutina general.';
 
     const nuevoPaciente = {
-      id: Date.now(),
       nombre: nombre.trim(),
       especie,
       raza,
@@ -98,8 +98,9 @@ export function FormularioPaciente({ onAgregarPaciente, onCancelar }) {
       peso: peso.trim() ? `${peso.trim()} kg` : 'No registrado',
       nombreDueno: nombreDueno.trim(),
       rutDueno: rutDueno.trim() || 'No informado',
-      motivo: diagnostico.trim() || 'Control de rutina general.',
-      foto: fotoFinal
+      diagnostico: descDiagnostico,
+      motivo: descDiagnostico,
+      foto: fotoPreview && !fotoPreview.startsWith('data:') ? fotoPreview : fotoFinal
     };
 
     onAgregarPaciente(nuevoPaciente);
