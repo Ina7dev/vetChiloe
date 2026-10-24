@@ -24,4 +24,9 @@ export const createPaciente = async (req, res) => {
   }
 };
 
-export default { getPacientes, createPaciente };
+export const pacienteController = {
+  getPacientes,
+  createPaciente
+};
+
+export default pacienteController;
