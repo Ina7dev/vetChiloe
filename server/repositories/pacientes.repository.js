@@ -4,31 +4,35 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 export const obtenerTodos = async () => {
-  const resultado = await pool.query('SELECT * FROM pacientes ORDER BY id DESC');
-  return resultado.rows;
+  const query = 'SELECT * FROM pacientes ORDER BY id ASC';
+  const { rows } = await pool.query(query);
+  return rows;
 };
 
 export const guardar = async (paciente) => {
   const query = `
     INSERT INTO pacientes (nombre, numero_atencion, especie, edad, diagnostico, foto)
-    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING *;
   `;
-  const valores = [
+  const values = [
     paciente.nombre,
     paciente.numero_atencion,
     paciente.especie,
-    paciente.edad || 'Desconocida',
-    paciente.diagnostico || '',
-    paciente.foto || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=300&q=80'
+    paciente.edad,
+    paciente.diagnostico,
+    paciente.foto
   ];
-  const resultado = await pool.query(query, valores);
-  return resultado.rows[0];
+  const { rows } = await pool.query(query, values);
+  return rows[0];
 };
 
-export default { obtenerTodos, guardar };
+export default { obtenerTodos, guardar, pool };
