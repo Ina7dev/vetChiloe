@@ -1,99 +1,27 @@
-# AegisVet - Sistema de Fichas Clínicas Veterinarias
-
-Plataforma web para la gestión de pacientes y emisión de carnets de salud animal desarrollada para la asignatura Tecnologías Web y Móviles (Ingeniería Civil en Informática, Universidad de Los Lagos).
-
-- Estudiante: Vicente Martin Garin Pereda
-- Rama de Trabajo: estudiante/vicente-garin
-- Fecha de Entrega: 14 de Octubre de 2026
-
----
-
-## 1. Contexto General
-Desarrollo de una solución web para la administración clínica veterinaria en Chiloé. El sistema implementa una arquitectura desacoplada en N-Capas, separando por completo la interfaz visual del usuario (React + Vite) del servidor y lógica de negocio (Node.js + Express).
-
----
-
-## 2. Mapa de Funcionamiento (Arquitectura en N-Capas)
-
-La comunicación entre el cliente y el servidor sigue un flujo ordenado y de bajo acoplamiento:
-
-![Diagrama de Arquitectura de N-Capas](arquitectura-capas.png)
-
-### Explicación del flujo de capas:
-1. Frontend (Puerto 5173): La interfaz gráfica solicita consultar o registrar pacientes mediante el servicio pacienteService.js, enviando solicitudes HTTP por internet.
-2. Rutas (routes/): El servidor recibe la petición en la URL correspondiente (/api/pacientes) y la deriva al controlador.
-3. Controlador (controllers/): Recibe la solicitud, extrae los datos y coordina la respuesta enviando los códigos de estado HTTP (200, 201 o 400).
-4. Servicio (services/): Aplica las reglas del negocio: valida que el nombre no esté vacío, comprueba que la especie sea permitida (Felino, Canino, Ave o Exótico) y genera automáticamente el correlativo de atención (ej: 2026-A4).
-5. Repositorio (repositories/): Gestiona directamente el almacenamiento en memoria para leer o insertar los registros de pacientes.
-
----
-
-## 3. Estructura de Carpetas del Proyecto
-
-vetChiloe/
+AegisVet - Sistema de Fichas Clínicas VeterinariasPlataforma web para la gestión de pacientes y emisión de carnets de salud animal desarrollada para la asignatura Tecnologías Web y Móviles (Ingeniería Civil en Informática, Universidad de Los Lagos).Estudiante: Vicente Martin Garin PeredaDocente: Víctor Saldivia VeraRama de Trabajo: estudiante/vicente-garinÚltima Actualización: 23 de Octubre de 2026🌐 Enlaces de Despliegue en Producción (Cloud)ComponenteNivel CloudProveedor / ServicioURL PúblicaFrontendCapa de Presentación (SPA)Render (Static Site)https://aegisvet-web.onrender.comBackendCapa Lógica / API RESTRender (Web Service)https://vetchiloe.onrender.com/api/pacientesBase de DatosDBaaS RelacionalNeon Serverless PostgreSQLConexión SSL activa (neon.tech)1. Contexto GeneralDesarrollo de una solución web para la administración clínica veterinaria en Chiloé. El sistema implementa una arquitectura desacoplada en N-Capas y 3 Niveles Físicos (3-Tier Architecture), separando por completo la interfaz visual del usuario (React + Vite) del servidor y lógica de negocio (Node.js + Express) y del motor de base de datos relacional (PostgreSQL en Neon).2. Mapa de Funcionamiento (Arquitectura en N-Capas y 3 Niveles)La comunicación entre el cliente, la API y la base de datos sigue un flujo ordenado y de bajo acoplamiento:Explicación del flujo de capas:Frontend (Capa de Presentación): La interfaz gráfica en React solicita consultar o registrar pacientes mediante el servicio pacienteService.js, enviando solicitudes HTTP asíncronas (fetch) a la API en producción.Rutas (routes/): El servidor Express recibe la petición en el endpoint correspondiente (/api/pacientes) y la deriva al controlador respectivo.Controlador (controllers/): Traduce el protocolo HTTP: extrae req.body, coordina la llamada a la lógica de negocio y responde con los códigos de estado HTTP estándar (200 OK, 201 Created o 400 Bad Request).Servicio (services/): Aplica las reglas del negocio: valida que los campos requeridos estén presentes, normaliza la especie y genera automáticamente el correlativo de atención médica (ej: 2026-A4).Repositorio (repositories/): Gestiona la persistencia de datos mediante pg.Pool ejecutando consultas SQL parametrizadas (SELECT, INSERT) contra PostgreSQL en la nube, garantizando transaccionalidad y seguridad contra inyecciones SQL.Base de Datos Cloud (DBaaS): Neon PostgreSQL almacena y preserva el estado de forma permanente.3. Estructura de Carpetas del ProyectovetChiloe/
 ├── docs/                               # Documentación y bitácoras personales
 │   ├── arquitectura-capas.png          # Imagen del diagrama de N-Capas
 │   └── sistema-informacion-Vicente.md  # Bitácora técnica y registro de entregas
 ├── public/                             # Recursos estáticos web
-├── src/                                # CAPA DE PRESENTACIÓN (Frontend)
-│   ├── components/                     # Componentes visuales (Tabla, Modal, Card, Formulario)
-│   ├── data/                           # Mocks iniciales de pacientes (Parte A)
-│   ├── services/                       # Conexión asíncrona hacia el backend (fetch)
-│   ├── App.jsx                         # Componente principal y gestión de estado
-│   └── main.jsx                        # Punto de entrada de React
-├── server/                             # SERVIDOR Y LÓGICA DE NEGOCIO (Backend)
-│   ├── controllers/                    # Manejo de peticiones y códigos de respuesta
-│   ├── repositories/                   # Acceso y persistencia sobre los datos
-│   ├── routes/                         # Definición de endpoints REST
-│   ├── services/                       # Validaciones de negocio y creación de correlativos
-│   ├── index.js                        # Archivo principal de Express y middlewares
-│   └── package.json                    # Dependencias del servidor (express, cors)
+├── src/                                # CAPA DE PRESENTACIÓN (Frontend - React + Vite)
+│   ├── components/                     # Componentes visuales (TablaPacientes, FlipCard, FormularioPaciente)
+│   ├── data/                           # Mocks históricos de pacientes
+│   ├── services/                       # Conexión asíncrona hacia la API en Render (fetch)
+│   ├── App.jsx                         # Componente raíz y control de estado reactivo
+│   └── main.jsx                        # Punto de montaje en el DOM
+├── server/                             # SERVIDOR Y LÓGICA DE NEGOCIO (Backend - Node.js + Express)
+│   ├── controllers/                    # Controladores HTTP (pacientes.controller.js)
+│   ├── repositories/                   # Acceso a base de datos PostgreSQL (pacientes.repository.js)
+│   ├── routes/                         # Definición de endpoints REST (pacientes.routes.js)
+│   ├── services/                       # Validaciones de negocio y correlativos (pacientes.service.js)
+│   ├── .env                            # Variables de entorno seguras (DATABASE_URL con SSL)
+│   ├── index.js                        # Inicialización de Express, CORS y middlewares
+│   └── package.json                    # Dependencias del servidor (express, cors, pg, dotenv)
 ├── package.json                        # Dependencias de frontend (React, Vite, XLSX)
 └── README.md                           # Información base del repositorio
-
----
-
-## 4. Endpoints del Servidor (API REST)
-
-| Método | Endpoint | Descripción | Código Éxito | Códigos Error |
-| :--- | :--- | :--- | :--- | :--- |
-| GET | /api/pacientes | Retorna el listado completo de mascotas registradas | 200 OK | 500 Internal Server Error |
-| POST | /api/pacientes | Registra una nueva mascota y genera su código de atención | 201 Created | 400 Bad Request |
-
----
-
-## 5. Historial de Avances Realizados
-
-### 5.1. Fichas Clínicas Interactivas (FlipCard) - Septiembre 2026
-- Tarjetas con efecto 3D que giran al hacer clic.
-- Vista frontal con foto, nombre, código y especie; reverso con diagnóstico médico y datos del tutor.
-
-### 5.2. Rediseño UX con Tabla Responsiva y Modal Flotante - Octubre 2026
-- Organización de pacientes en una tabla clara con badges por especie.
-- Botón flotante (FAB) para abrir el formulario sin recargar la página.
-- Exportación automática del historial médico a planillas Excel (.xlsx).
-
-### 5.3. Implementación de Arquitectura N-Capas - 14-10-2026
-- Frontend desacoplado (Parte A): Creación de src/services/pacienteService.js para consumir datos mediante llamadas asíncronas con useEffect.
-- Backend modular (Parte B): Servidor independiente en Express.js con división formal en 4 capas (routes, controllers, services, repositories).
-- Verificación en Thunder Client: Comprobación de los 3 casos requeridos en la evaluación:
-  - GET /api/pacientes -> Respuesta 200 OK con la lista de pacientes.
-  - POST /api/pacientes -> Respuesta 201 Created con el paciente guardado y su correlativo.
-  - POST /api/pacientes (con especie inválida o sin datos) -> Respuesta 400 Bad Request.
-
----
-
-## 6. Instrucciones para Ejecutar el Proyecto
-
-Para correr la aplicación se deben mantener dos terminales abiertas simultáneamente en VS Code:
-
-### 1. Iniciar el Servidor Backend (Puerto 3000)
-cd server
+4. Endpoints del Servidor (API REST)MétodoEndpointDescripciónCódigo ÉxitoCódigos ErrorGET/api/pacientesRetorna el listado completo de pacientes desde Neon200 OK500 Internal Server ErrorPOST/api/pacientesRegistra una nueva mascota y genera su correlativo201 Created400 Bad Request / 500 Error5. Historial de Avances Realizados5.1. Fichas Clínicas Interactivas (FlipCard) - Septiembre 2026Tarjetas con efecto 3D que rotan al hacer clic.Vista frontal con foto, nombre, código y especie; reverso con diagnóstico médico y datos de contacto.5.2. Rediseño UX con Tabla Responsiva y Modal Flotante - Octubre 2026Organización de pacientes en tabla escaneable con badges visuales por especie.Botón de acción flotante (FAB) para despliegue condicional del formulario en modal superpuesto.Exportación automática del historial clínico a planillas Excel (.xlsx).5.3. Implementación de Arquitectura N-Capas - 14-10-2026Frontend desacoplado (Parte A): creación de src/services/pacienteService.js con consumo reactivo mediante useEffect.Backend modular (Parte B): servidor en Express con separación estricta en 4 capas (routes, controllers, services, repositories).5.4. Laboratorio Cloud: Persistencia en PostgreSQL y Despliegue - 23-10-2026Base de Datos en la Nube: Creación del proyecto en Neon Serverless PostgreSQL, ejecución de DDL para la tabla pacientes y carga del registro semilla (seed de Mercedes).Conexión Segura Backend: Integración de cliente pg mediante Connection Pooling y parámetros SSL requeridos en la nube. Gestión de credenciales a través de variables de entorno .env.Despliegue Continuo de Backend: Publicación del servicio web en Render con comando de arranque y variables de entorno vinculadas.Despliegue Continuo de Frontend: Publicación del cliente estático React + Vite en Render apuntando a los endpoints públicos de producción.Validación End-to-End: Flujo completo de lectura (GET) y creación (POST) persistido exitosamente en Neon desde la web pública.6. Instrucciones para Ejecución LocalPara correr el entorno de desarrollo local se requieren dos terminales:1. Servidor Backend (Puerto 3000)cd server
+npm install
 node index.js
-
-Salida esperada: Backend de AegisVet corriendo en http://localhost:3000
-
-### 2. Iniciar el Frontend (Puerto 5173)
+Salida: Backend de AegisVet corriendo en http://localhost:30002. Frontend (Puerto 5173)npm install
 npm run dev
-
-Salida esperada: Local: http://localhost:5173/
+Salida: Local: http://localhost:5173/
