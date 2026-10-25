@@ -230,17 +230,3 @@ vetChiloe/                          # Repositorio de VetPenguin
 * En `src/services/pacienteService.js`, `URL_API` apunta a la URL pública de Render.
 
 > El archivo `.env` nunca se sube a GitHub (está en el `.gitignore`). En Render, la cadena de conexión se configura como variable de entorno desde su panel.
-   Queda funcionando en `http://localhost:3000`.
-
-4. Frontend (terminal 2, desde la carpeta raíz):
-   ```bash
-   npm install
-   npm run dev
-   ```
-   Queda funcionando en `http://localhost:5173`.
-
-> El archivo `.npmrc` activa `legacy-peer-deps` porque `react-card-flip` todavía pide React 18. Así también funciona la instalación en Vercel.
-## 🌐 Sitio publicado
-
-* Frontend (Vercel): pendiente
-* Backend (Render): pendiente
