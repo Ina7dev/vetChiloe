@@ -1,4 +1,4 @@
-// direccion del backend
+// direccion del backend api
 const URL_API = 'https://vetchiloe-api-valentina.onrender.com/api/pacientes';
 
 // GET: le pide la lista al servidor
