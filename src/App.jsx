@@ -32,9 +32,9 @@ function App() {
         setPacientes(datos);
         setCargando(false);
       })
-      // si el servidor esta apagado avisa en vez de quedarse cargando
-      .catch(() => {
-        alert('No se pudo conectar con el servidor.');
+      // si el servidor esta apagado o fallo la base de datos avisa en vez de quedarse cargando
+      .catch((error) => {
+        alert('No se pudo conectar con el servidor: ' + error.message);
         setCargando(false);
       });
   }, []);
@@ -53,7 +53,7 @@ function App() {
     // el servicio le pone id, numero de atencion e historial
     registrarPaciente(datosPaciente)
       .then((nuevoPaciente) => {
-        setPacientes([...pacientes, nuevoPaciente]);
+        setPacientes([nuevoPaciente, ...pacientes]);
         // oculta el formulario despues de registrar
         setMostrarFormulario(false);
         // muestra la lista para ver al paciente nuevo
