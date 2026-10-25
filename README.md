@@ -22,7 +22,13 @@ El propósito principal de este repositorio es pedagógico. Busca enseñar a los
 
 * Entorno de ejecución: Node.js
 * Framework: Express.js (API REST)
-* Base de datos: PostgreSQL (planificado, por ahora los datos viven en memoria)
+* Base de datos: PostgreSQL en la nube (Neon), conectada con `pg` y `dotenv`
+
+**Despliegue:**
+
+* Frontend: Vercel
+* Backend: Render (Web Service)
+* Base de datos: Neon
 
 ## ✨ Funcionalidades Principales (UI/UX)
 
@@ -53,7 +59,7 @@ flowchart TD
     end
 
     C -->|fetch HTTP| D
-    G --> H[(Datos en memoria)]
+    G --> H[(PostgreSQL - Neon)]
 ```
 
 | Capa | Ubicación | Responsabilidad |
@@ -63,7 +69,7 @@ flowchart TD
 | Rutas | `server/src/routes/` | Define las URL (GET, POST) y a qué controlador van |
 | Controladores | `server/src/controllers/` | Traducen HTTP: leen `req` y responden con `res` |
 | Servicios (backend) | `server/src/services/` | Reglas de negocio: valida la especie y genera el N° de atención |
-| Repositorios | `server/src/repositories/` | Los únicos que tocan los datos |
+| Repositorios | `server/src/repositories/` | Los únicos que tocan la base de datos, con consultas SQL |
 
 ## 🔌 Endpoints
 
@@ -80,8 +86,9 @@ vetChiloe/
 ├── public/
 │   └── pacientes/                  # Fotos de los pacientes
 ├── server/                         # Backend (Node.js + Express)
+│   ├── database/
+│   │   └── pacientes.sql           # Tabla y paciente de prueba
 │   ├── src/
-│   │   ├── config/                 # Conexión a la BD (próxima etapa)
 │   │   ├── controllers/
 │   │   │   └── pacientes.controller.js
 │   │   ├── repositories/
@@ -91,6 +98,7 @@ vetChiloe/
 │   │   ├── services/
 │   │   │   └── pacientes.service.js
 │   │   └── app.js                  # Enciende el servidor
+│   ├── .env.example                # Variables que hay que crear en .env
 │   └── package.json
 ├── src/                            # Frontend (React)
 │   ├── components/
@@ -125,7 +133,9 @@ vetChiloe/
    git checkout estudiante/valentina-calderon
    ```
 
-2. Backend (terminal 1):
+2. Base de datos: en el SQL Editor de Neon se ejecuta `server/database/pacientes.sql`.
+
+3. Backend (terminal 1). Primero se crea `server/.env` copiando `server/.env.example` y poniendo la cadena de conexión de Neon:
    ```bash
    cd server
    npm install
@@ -133,11 +143,15 @@ vetChiloe/
    ```
    Queda funcionando en `http://localhost:3000`.
 
-3. Frontend (terminal 2, desde la carpeta raíz):
+4. Frontend (terminal 2, desde la carpeta raíz):
    ```bash
-   npm install --legacy-peer-deps
+   npm install
    npm run dev
    ```
    Queda funcionando en `http://localhost:5173`.
 
-> El `--legacy-peer-deps` es necesario porque `react-card-flip` todavía pide React 18.
+> El archivo `.npmrc` activa `legacy-peer-deps` porque `react-card-flip` todavía pide React 18. Así también funciona la instalación en Vercel.
+## 🌐 Sitio publicado
+
+* Frontend (Vercel): pendiente
+* Backend (Render): pendiente
