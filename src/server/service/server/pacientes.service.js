@@ -1,62 +1,48 @@
-import * as repositoriesPaciente from '../../repositories/pacientes.repositories.js';
+import * as repo from '../../repositories/pacientes.repositories.js';
 
-const IMAGENES_POR_ESPECIE = {
+const IMAGENES = {
   perro: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR5K9bMLje8lyz6Kpk97MzwOZrh5PAlLXkZoj4-Q8DWKg&s=10',
   gato: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_tGFXnJruodcIwFf8xFENi3SiQjodb1F1M-w-gk180w&s=10',
 };
 const CAMPOS = ['nombre', 'especie', 'raza', 'diagnostico'];
-const MAX_ANOS = 35;
-const MAX_MESES = 12;
 
-const estaVacio = (v) => v === null || v === undefined || String(v).trim() === '';
+const vacio = (v) => String(v ?? '').trim() === '';
+const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
-function formatearEdad({ anos, meses }) {
-  const partes = [];
-  if (anos > 0) partes.push(`${anos} ${anos === 1 ? 'año' : 'años'}`);
-  if (meses > 0) partes.push(`${meses} ${meses === 1 ? 'mes' : 'meses'}`);
-  return partes.join(' y ') || '0 meses';
-}
-
-function validarEdad(edad) {
-  if (!edad || estaVacio(edad.anos) || estaVacio(edad.meses)) {
-    throw new Error('La edad (años y meses) es obligatoria');
+function entero(valor, max, etiqueta) {
+  const n = vacio(valor) ? NaN : Number(valor);
+  if (!Number.isInteger(n) || n < 0 || n > max) {
+    throw new Error(`${etiqueta} debe ser un entero entre 0 y ${max}`);
   }
-  const anos = Number(edad.anos);
-  const meses = Number(edad.meses);
-
-  if (!Number.isInteger(anos) || !Number.isInteger(meses) || anos < 0 || meses < 0) {
-    throw new Error('La edad debe ser un número entero no negativo');
-  }
-  if (anos > MAX_ANOS) throw new Error(`Los años no pueden superar ${MAX_ANOS}`);
-  if (meses > MAX_MESES) throw new Error(`Los meses no pueden superar ${MAX_MESES}`);
-
-  return { anos, meses };
+  return n;
 }
 
-export async function getDataPacientes() {
-  return repositoriesPaciente.getData();
+function formatearEdad(edad) {
+  const anos = entero(edad?.anos, 35, 'Los años');
+  const meses = entero(edad?.meses, 11, 'Los meses');
+  return [anos && plural(anos, 'año', 'años'), meses && plural(meses, 'mes', 'meses')]
+    .filter(Boolean)
+    .join(' y ') || '0 meses';
 }
+
+export const getDataPacientes = () => repo.getData();
 
 export async function insertDataPacientes(datos) {
   for (const campo of CAMPOS) {
-    if (estaVacio(datos?.[campo])) {
-      throw new Error(`El campo "${campo}" es nulo o está vacío`);
-    }
+    if (vacio(datos?.[campo])) throw new Error(`El campo "${campo}" es nulo o está vacío`);
   }
 
-  const especie = String(datos.especie).trim().toLowerCase();
-  if (!(especie in IMAGENES_POR_ESPECIE)) {
+  const especie = datos.especie.trim().toLowerCase();
+  if (!Object.hasOwn(IMAGENES, especie)) {
     throw new Error(`Especie no válida: "${datos.especie}"`);
   }
 
-  const edad = validarEdad(datos.edad);
-
-  return repositoriesPaciente.insertData({
+  return repo.insertData({
     nombre: datos.nombre.trim(),
     especie,
     raza: datos.raza.trim(),
     diagnostico: datos.diagnostico.trim(),
-    edad: formatearEdad(edad),
-    imagen: IMAGENES_POR_ESPECIE[especie],
+    edad: formatearEdad(datos.edad),
+    imagen: IMAGENES[especie],
   });
 }
