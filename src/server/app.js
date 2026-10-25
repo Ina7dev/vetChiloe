@@ -5,6 +5,10 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.send('Hola mundo');
+});
+
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/pacientes', pacientesRoutes);
 
