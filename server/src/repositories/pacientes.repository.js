@@ -1,48 +1,35 @@
-// por ahora los datos viven en memoria, despues aqui se conecta postgresql
-let pacientes = [
-  {
-    id: 1,
-    nombre: 'Poi',
-    numero_atencion: '2026-D1',
-    especie: 'Gato',
-    raza: 'Siamés',
-    edad: 3,
-    peso: 4.2,
-    foto: '/pacientes/default.jpg',
-    diagnostico: 'Control general',
-    antecedentes: '',
-    dueno: { nombre: 'Camila Soto', telefono: '912345678', correo: 'camila@correo.cl' },
-    alta: false,
-    historial: [
-      { fecha: '01-10-2026', motivo: 'Ingreso', detalle: 'Registrado en la clínica.' }
-    ]
-  },
-  {
-    id: 2,
-    nombre: 'Kou',
-    numero_atencion: '2026-D2',
-    especie: 'Perro',
-    raza: 'Labrador',
-    edad: 5,
-    peso: 28,
-    foto: '/pacientes/default.jpg',
-    diagnostico: 'Herida en una pata',
-    antecedentes: 'Alergia a un antibiotico',
-    dueno: { nombre: 'Matias Vera', telefono: '987654321', correo: 'Sin correo' },
-    alta: false,
-    historial: [
-      { fecha: '03-10-2026', motivo: 'Ingreso', detalle: 'Registrado en la clínica.' }
-    ]
-  }
-];
+const { Pool } = require('pg');
+require('dotenv').config();
 
-function obtenerTodos() {
-  return pacientes;
+// conexion a la base de datos en la nube, la direccion viene del .env
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // neon y supabase piden ssl
+});
+
+async function obtenerTodos() {
+  const resultado = await pool.query('SELECT * FROM pacientes ORDER BY id DESC');
+  return resultado.rows;
 }
 
-function guardar(paciente) {
-  pacientes.push(paciente);
-  return paciente;
+async function guardar(paciente) {
+  const query = `
+    INSERT INTO pacientes (nombre, numero_atencion, especie, raza, edad, peso,
+                           diagnostico, antecedentes, foto, dueno, alta, historial)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    RETURNING *;
+  `;
+  const valores = [
+    paciente.nombre, paciente.numero_atencion, paciente.especie, paciente.raza,
+    paciente.edad, paciente.peso, paciente.diagnostico, paciente.antecedentes,
+    paciente.foto,
+    // dueno e historial son objetos, se pasan a texto json para guardarlos
+    paciente.dueno ? JSON.stringify(paciente.dueno) : null,
+    paciente.alta,
+    JSON.stringify(paciente.historial)
+  ];
+  const resultado = await pool.query(query, valores);
+  return resultado.rows[0];
 }
 
 module.exports = { obtenerTodos, guardar };
