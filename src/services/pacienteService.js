@@ -1,6 +1,5 @@
 // direccion del backend
-// cuando este publicado en render se cambia por: https://TU-APP.onrender.com/api/pacientes
-const URL_API = 'http://localhost:3000/api/pacientes';
+const URL_API = 'https://vetchiloe-api-valentina.onrender.com/api/pacientes';
 
 // GET: le pide la lista al servidor
 export async function obtenerPacientes() {
