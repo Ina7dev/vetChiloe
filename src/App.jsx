@@ -5,6 +5,7 @@ import FormularioPaciente from './components/FormularioPaciente';
 import DetallePaciente from './components/DetallePaciente';
 import TablaPacientes from './components/TablaPacientes';
 import BarraPestanas from './components/BarraPestanas';
+import BuscadorPaciente from './components/BuscadorPaciente';
 import { obtenerPacientes, registrarPaciente, guardarPacientes } from './services/pacienteService';
 import razasPorEspecie from './data/Razas';
 
@@ -24,6 +25,8 @@ function App() {
   const [pacienteDetalle, setPacienteDetalle] = useState(null);
   // guarda el paciente del que se esta viendo el carnet
   const [pacienteCarnet, setPacienteCarnet] = useState(null);
+  // texto que se escribe en el buscador
+  const [busqueda, setBusqueda] = useState('');
 
   // al abrir la pagina le pide los pacientes al servicio
   useEffect(() => {
@@ -48,6 +51,13 @@ function App() {
 
   // separa a los que ya fueron dados de alta
   const pacientesDeAlta = pacientes.filter((paciente) => paciente.alta);
+
+  // deja solo los que tienen el texto en el nombre o la especie
+  // todo en minusculas para que no importen las mayusculas
+  const filtrados = pacientes.filter((p) =>
+    `${p.nombre} ${p.especie}`.toLowerCase()
+      .includes(busqueda.toLowerCase())
+  );
 
   const agregarPaciente = (datosPaciente) => {
     // el servicio le pone id, numero de atencion e historial
@@ -136,12 +146,22 @@ function App() {
             ) : pacientes.length === 0 ? (
               <p className="sin-pacientes">Aún no hay pacientes registrados.</p>
             ) : (
-              <TablaPacientes
-                pacientes={pacientes}
-                onVerFicha={setPacienteCarnet}
-                onVerDetalle={setPacienteDetalle}
-                onEliminar={setPacientePorEliminar}
-              />
+              <>
+                <BuscadorPaciente texto={busqueda} onCambiar={setBusqueda} />
+                <p className="contador">{filtrados.length} de {pacientes.length} pacientes</p>
+
+                {/* si el filtro no deja a nadie se avisa en vez de mostrar la tabla vacia */}
+                {filtrados.length === 0 ? (
+                  <p className="sin-pacientes">No se encontraron pacientes</p>
+                ) : (
+                  <TablaPacientes
+                    pacientes={filtrados}
+                    onVerFicha={setPacienteCarnet}
+                    onVerDetalle={setPacienteDetalle}
+                    onEliminar={setPacientePorEliminar}
+                  />
+                )}
+              </>
             )}
           </>
         )}

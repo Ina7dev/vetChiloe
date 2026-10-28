@@ -1,0 +1,33 @@
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 420px;
+  margin: 0 auto 8px;
+  padding: 8px 16px;
+  background: white;
+  border: 2px solid var(--celeste-fuerte);
+  border-radius: var(--radio-pastilla);
+}
+
+/* cambia a rosa cuando se esta escribiendo */
+.buscador:focus-within {
+  border-color: var(--rosa-fuerte);
+}
+
+.buscador input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--texto-pequeno);
+  color: var(--texto);
+}
+
+/* contador de pacientes debajo del buscador */
+.contador {
+  margin-bottom: 16px;
+  font-size: var(--texto-chico);
+  color: var(--texto-suave);
+}
