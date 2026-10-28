@@ -13,6 +13,12 @@ async function buscarPacientes(texto) {
   return await repositorio.buscar(texto.trim());
 }
 
+// pg entrega el total (bigint) como texto, aqui se pasa a numero
+async function resumenPorEspecie() {
+  const filas = await repositorio.resumen();
+  return filas.map((fila) => ({ especie: fila.especie, total: Number(fila.total) }));
+}
+
 async function crearPaciente(datos) {
   const especie = (datos.especie || '').toLowerCase();
 
@@ -36,4 +42,4 @@ async function crearPaciente(datos) {
   return await repositorio.guardar(nuevoPaciente);
 }
 
-module.exports = { listarPacientes, buscarPacientes, crearPaciente };
+module.exports = { listarPacientes, buscarPacientes, resumenPorEspecie, crearPaciente };

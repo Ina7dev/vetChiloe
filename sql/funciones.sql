@@ -43,3 +43,15 @@ $$ LANGUAGE sql;
 -- SELECT generar_numero_atencion();
 -- SELECT * FROM registrar_paciente(' Charkicito ', 'gato', 'Mestizo', 3, 4.5,
 --   'Control sano.', '', NULL, NULL, '[]');
+
+-- paso 5: cuenta cuantos pacientes hay de cada especie
+CREATE OR REPLACE FUNCTION resumen_por_especie()
+RETURNS TABLE (especie VARCHAR, total BIGINT) AS $$
+  SELECT p.especie, COUNT(*)
+  FROM pacientes p
+  GROUP BY p.especie
+  ORDER BY 2 DESC;
+$$ LANGUAGE sql STABLE;
+
+-- prueba
+-- SELECT * FROM resumen_por_especie();

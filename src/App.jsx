@@ -6,8 +6,10 @@ import DetallePaciente from './components/DetallePaciente';
 import TablaPacientes from './components/TablaPacientes';
 import BarraPestanas from './components/BarraPestanas';
 import BuscadorPaciente from './components/BuscadorPaciente';
-import { obtenerPacientes, registrarPaciente, guardarPacientes } from './services/pacienteService';
+import { obtenerPacientes, registrarPaciente, guardarPacientes, obtenerResumen } from './services/pacienteService';
+import { claseEspecie } from './data/claseEspecie';
 import razasPorEspecie from './data/Razas';
+
 
 function App() {
   // la lista parte vacia y se llena cuando responde el servicio
@@ -27,6 +29,8 @@ function App() {
   const [pacienteCarnet, setPacienteCarnet] = useState(null);
   // texto que se escribe en el buscador
   const [busqueda, setBusqueda] = useState('');
+  // cuantos pacientes hay de cada especie, viene de la base de datos
+  const [resumen, setResumen] = useState([]);
 
   // al abrir la pagina le pide los pacientes al servicio
   useEffect(() => {
@@ -35,7 +39,7 @@ function App() {
         setPacientes(datos);
         setCargando(false);
       })
-      // si el servidor esta apagado o fallo la base de datos avisa en vez de quedarse cargando
+  // si el servidor esta apagado o fallo la base de datos avisa en vez de quedarse cargando
       .catch((error) => {
         alert('No se pudo conectar con el servidor: ' + error.message);
         setCargando(false);
@@ -47,6 +51,16 @@ function App() {
   useEffect(() => {
     if (cargando) return;
     guardarPacientes(pacientes);
+  }, [pacientes, cargando]);
+
+  // pide el resumen por especie cada vez que cambia la lista
+  // asi al registrar un paciente se actualizan los numeros
+  useEffect(() => {
+    if (cargando) return;
+    obtenerResumen()
+      .then(setResumen)
+  // si falla solo no se muestran las etiquetas
+      .catch(() => setResumen([]));
   }, [pacientes, cargando]);
 
   // separa a los que ya fueron dados de alta
@@ -146,7 +160,16 @@ function App() {
             ) : pacientes.length === 0 ? (
               <p className="sin-pacientes">Aún no hay pacientes registrados.</p>
             ) : (
-              <>
+                            <>
+                {/* etiquetas con el total de cada especie, con los colores de los badges */}
+                <div className="resumen-especies">
+                  {resumen.map((fila) => (
+                    <span key={fila.especie} className={claseEspecie(fila.especie)}>
+                      {fila.especie}: {fila.total}
+                    </span>
+                  ))}
+                </div>
+
                 <BuscadorPaciente texto={busqueda} onCambiar={setBusqueda} />
                 <p className="contador">{filtrados.length} de {pacientes.length} pacientes</p>
 

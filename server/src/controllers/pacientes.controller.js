@@ -24,6 +24,16 @@ async function buscar(req, res) {
   }
 }
 
+// GET /api/pacientes/resumen
+async function resumen(req, res) {
+  try {
+    const filas = await servicio.resumenPorEspecie();
+    res.status(200).json(filas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 // POST /api/pacientes
 async function crear(req, res) {
   try {
@@ -35,4 +45,4 @@ async function crear(req, res) {
   }
 }
 
-module.exports = { listar, buscar, crear };
+module.exports = { listar, buscar, resumen, crear };

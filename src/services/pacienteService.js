@@ -30,6 +30,17 @@ export async function registrarPaciente(paciente) {
   return datos;
 }
 
+// GET: le pide al servidor cuantos pacientes hay de cada especie
+export async function obtenerResumen() {
+  const respuesta = await fetch(`${URL_API}/resumen`);
+  const datos = await respuesta.json();
+
+  if (!respuesta.ok) {
+    throw new Error(datos.error);
+  }
+  return datos;
+}
+
 // el servidor todavia no tiene rutas para editar ni eliminar,
 // asi que por ahora estos cambios solo duran hasta recargar
 export function guardarPacientes() {}

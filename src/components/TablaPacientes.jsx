@@ -2,13 +2,9 @@ import './TablaPacientes.css';
 import { fotoPaciente } from '../data/fotosEspecie';
 
 // devuelve la clase de la etiqueta segun la especie
-function claseEspecie(especie) {
-  const texto = especie.toLowerCase();
-  if (texto.includes('felino') || texto.includes('gato')) return 'etiqueta badge-felino';
-  if (texto.includes('canino') || texto.includes('perro')) return 'etiqueta badge-canino';
-  if (texto.includes('ave') || texto.includes('ping')) return 'etiqueta badge-ave';
-  return 'etiqueta badge-otro';
-}
+import './TablaPacientes.css';
+import { fotoPaciente } from '../data/fotosEspecie';
+import { claseEspecie } from '../data/claseEspecie';
 
 function TablaPacientes({ pacientes, onVerFicha, onVerDetalle, onEliminar }) {
   return (

@@ -18,6 +18,12 @@ async function buscar(texto) {
   return resultado.rows;
 }
 
+// llama a la funcion resumen_por_especie de la base de datos
+async function resumen() {
+  const resultado = await pool.query('SELECT * FROM resumen_por_especie()');
+  return resultado.rows;
+}
+
 // llama a la funcion registrar_paciente, la base de datos pone el numero de atencion
 async function guardar(paciente) {
   const resultado = await pool.query(
@@ -33,4 +39,4 @@ async function guardar(paciente) {
   return resultado.rows[0];
 }
 
-module.exports = { obtenerTodos, buscar, guardar };
+module.exports = { obtenerTodos, buscar, resumen, guardar };

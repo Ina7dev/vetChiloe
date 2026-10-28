@@ -140,3 +140,12 @@
   right: -12px;
   z-index: 10;
 }
+
+/* etiquetas del resumen por especie sobre la tabla */
+.resumen-especies {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
