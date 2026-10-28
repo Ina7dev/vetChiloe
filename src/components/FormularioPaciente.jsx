@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './FormularioPaciente.css';
+import { fotoPaciente } from '../data/fotosEspecie';
 
 function FormularioPaciente({ pacientes, razasPorEspecie, onAgregar, onReingresar }) {
   // datos para buscar una mascota que ya tiene ficha
@@ -112,7 +113,7 @@ function FormularioPaciente({ pacientes, razasPorEspecie, onAgregar, onReingresa
         </div>
 
         <div className="vista-previa">
-          <img src={pacienteEncontrado.foto} alt={pacienteEncontrado.nombre} />
+            <img src={fotoPaciente(pacienteEncontrado)} alt={pacienteEncontrado.nombre} />
           <span>
             <strong>{pacienteEncontrado.nombre}</strong> ({pacienteEncontrado.especie})
             <br />

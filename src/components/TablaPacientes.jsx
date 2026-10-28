@@ -1,4 +1,5 @@
 import './TablaPacientes.css';
+import { fotoPaciente } from '../data/fotosEspecie';
 
 // devuelve la clase de la etiqueta segun la especie
 function claseEspecie(especie) {
@@ -30,7 +31,7 @@ function TablaPacientes({ pacientes, onVerFicha, onVerDetalle, onEliminar }) {
               <td>
                 {/* foto pequeña al lado del nombre */}
                 <div className="celda-nombre">
-                  <img className="foto-mini" src={paciente.foto} alt={paciente.nombre} />
+                  <img className="foto-mini" src={fotoPaciente(paciente)} alt={paciente.nombre} />
                   {paciente.nombre}
                 </div>
               </td>

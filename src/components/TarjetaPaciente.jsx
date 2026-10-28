@@ -1,14 +1,11 @@
 import './TarjetaPaciente.css';
+import { fotoPaciente } from '../data/fotosEspecie';
 
 function TarjetaPaciente(props) {
   const { paciente, onVerFicha } = props;  // aqui extraemos la informacion del paciente desde las props
   return (
   <div className="tarjeta">
-    {paciente.foto ? (
-      <img src={paciente.foto} alt={`Foto de ${paciente.nombre}`} className="tarjeta-foto" />
-    ) : (
-      <div className="tarjeta-foto">🐧</div>
-    )}
+    <img src={fotoPaciente(paciente)} alt={`Foto de ${paciente.nombre}`} className="tarjeta-foto" />
 
     <h3>{paciente.nombre}</h3>
     <p><strong>Número Paciente:</strong> {paciente.numero_atencion}</p>
