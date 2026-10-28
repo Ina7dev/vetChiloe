@@ -1,3 +1,4 @@
+
 const servicio = require('../services/pacientes.service');
 
 // GET /api/pacientes
@@ -7,6 +8,18 @@ async function listar(req, res) {
     res.status(200).json(pacientes);
   } catch (error) {
     // por ejemplo si no se pudo conectar a la base de datos
+    res.status(500).json({ error: error.message });
+  }
+}
+
+// GET /api/pacientes/buscar?q=texto
+async function buscar(req, res) {
+  try {
+    // si no viene q se busca con texto vacio y salen todos
+    const texto = req.query.q || '';
+    const pacientes = await servicio.buscarPacientes(texto);
+    res.status(200).json(pacientes);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
@@ -22,4 +35,4 @@ async function crear(req, res) {
   }
 }
 
-module.exports = { listar, crear };
+module.exports = { listar, buscar, crear };

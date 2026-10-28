@@ -8,6 +8,11 @@ async function listarPacientes() {
   return await repositorio.obtenerTodos();
 }
 
+// el servicio solo le quita los espacios al texto y le pasa la busqueda al repositorio
+async function buscarPacientes(texto) {
+  return await repositorio.buscar(texto.trim());
+}
+
 // busca el numero mas alto que existe y le suma uno
 async function generarNumeroAtencion() {
   const pacientes = await repositorio.obtenerTodos();
@@ -44,4 +49,4 @@ async function crearPaciente(datos) {
   return await repositorio.guardar(nuevoPaciente);
 }
 
-module.exports = { listarPacientes, crearPaciente };
+module.exports = { listarPacientes, buscarPacientes, crearPaciente };

@@ -12,6 +12,12 @@ async function obtenerTodos() {
   return resultado.rows;
 }
 
+// llama a la funcion buscar_pacientes de la base de datos
+async function buscar(texto) {
+  const resultado = await pool.query('SELECT * FROM buscar_pacientes($1)', [texto]);
+  return resultado.rows;
+}
+
 async function guardar(paciente) {
   const query = `
     INSERT INTO pacientes (nombre, numero_atencion, especie, raza, edad, peso,
@@ -32,4 +38,4 @@ async function guardar(paciente) {
   return resultado.rows[0];
 }
 
-module.exports = { obtenerTodos, guardar };
+module.exports = { obtenerTodos, buscar, guardar };
