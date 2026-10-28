@@ -30,6 +30,7 @@ El propósito principal de este repositorio es pedagógico. Busca enseñar a los
 * Entorno de ejecución: Node.js
 * Framework: Express.js (API REST)
 * Base de datos: PostgreSQL en la nube (Neon), conectada con `pg` y `dotenv`
+* Lógica en la base de datos: funciones de PostgreSQL (búsqueda, registro y estadística)
 
 **Despliegue:**
 
@@ -40,14 +41,17 @@ El propósito principal de este repositorio es pedagógico. Busca enseñar a los
 ## ✨ Funcionalidades Principales (UI/UX)
 
 * **Pestañas de navegación:** Inicio, Pacientes y Dados de alta, sin recargar la página.
+* **Buscador reactivo:** filtra la tabla por nombre o especie mientras se escribe, sin importar mayúsculas, con un contador "X de Y pacientes" y un aviso cuando no hay resultados.
+* **Resumen por especie:** etiquetas sobre la tabla con el total de pacientes de cada especie (por ejemplo "Gato: 2"), con los mismos colores de los badges. Los totales los calcula la base de datos.
 * **Tabla de pacientes:** tabla responsiva con foto, N° de atención, especie con color, edad y diagnóstico.
-* **Registro de pacientes:** formulario en ventana (modal) que se abre con un botón flotante. Incluye datos de la mascota, foto y datos del dueño. El paciente queda guardado en la base de datos.
+* **Foto por especie:** si el paciente no tiene foto propia, se muestra una silueta de su especie (perro, gato, pingüino, conejo o ave).
+* **Registro de pacientes:** formulario en ventana (modal) que se abre con un botón flotante. Incluye datos de la mascota, foto y datos del dueño. El N° de atención lo genera la base de datos automáticamente (por ejemplo `2026-0001`).
 * **Reingreso:** si la mascota ya tiene ficha, se busca por su N° de atención y solo se registra el motivo de la nueva visita.
 * **Carnet clínico:** tarjeta giratoria con la foto y datos en el anverso, y la ficha con el dueño en el reverso. Desde ahí se puede dar de alta al paciente.
 * **Detalle del paciente:** estado (en tratamiento o dado de alta), antecedentes, dueño e historial completo.
 * **Eliminar paciente:** con ventana de confirmación.
 
-> Por ahora la API tiene las rutas para listar y registrar pacientes. El reingreso, el alta y la eliminación funcionan en la página, pero todavía no se guardan en la base de datos.
+> La API tiene rutas para listar, buscar, registrar y resumir pacientes. El reingreso, el alta y la eliminación funcionan en la página, pero todavía no se guardan en la base de datos.
 
 ## 🧱 Arquitectura en N-Capas
 
@@ -68,7 +72,7 @@ flowchart TD
     end
 
     C -->|fetch HTTP| D
-    G -->|consultas SQL| H[(PostgreSQL - Neon)]
+    G -->|SELECT a funciones SQL| H[(PostgreSQL - Neon)]
 ```
 
 | Capa | Ubicación | Responsabilidad |
@@ -77,8 +81,9 @@ flowchart TD
 | Servicios (frontend) | `src/services/pacienteService.js` | Pide y envía los datos a la API con `fetch` |
 | Rutas | `server/src/routes/` | Define las URL (GET, POST) y a qué controlador van |
 | Controladores | `server/src/controllers/` | Traducen HTTP: leen `req` y responden con `res` |
-| Servicios (backend) | `server/src/services/` | Reglas de negocio: valida la especie y genera el N° de atención |
-| Repositorios | `server/src/repositories/` | Los únicos que tocan la base de datos, con consultas SQL |
+| Servicios (backend) | `server/src/services/` | Reglas de negocio: valida la especie, limpia el texto de búsqueda y convierte los totales a número |
+| Repositorios | `server/src/repositories/` | Los únicos que tocan la base de datos; llaman a las funciones de PostgreSQL |
+| Funciones SQL | `sql/funciones.sql` | Lógica propia del negocio dentro de la base de datos |
 
 ## 🗄️ Base de Datos
 
@@ -88,7 +93,7 @@ La tabla `pacientes` se crea con el script `server/database/pacientes.sql`. Part
 |---|---|---|
 | `id` | `SERIAL` | Llave primaria, la genera la base de datos |
 | `nombre` | `VARCHAR(100)` | Obligatorio |
-| `numero_atencion` | `VARCHAR(20)` | Obligatorio y único |
+| `numero_atencion` | `VARCHAR(20)` | Obligatorio y único, lo genera la base de datos |
 | `especie` | `VARCHAR(50)` | Obligatorio |
 | `raza` | `VARCHAR(50)` | |
 | `edad` | `INT` | |
@@ -102,25 +107,45 @@ La tabla `pacientes` se crea con el script `server/database/pacientes.sql`. Part
 
 El dueño y el historial se guardan como JSON porque en el frontend ya son un objeto y una lista, así llegan igual que antes.
 
+### Funciones de PostgreSQL
+
+Están en `sql/funciones.sql` y se ejecutan en el SQL Editor de Neon.
+
+| Función | Tipo | Qué hace |
+|---|---|---|
+| `buscar_pacientes(p_texto)` | Consulta | Busca por nombre o especie en toda la base, sin importar mayúsculas (`ILIKE`) |
+| `generar_numero_atencion()` | Generadora | Arma el N° de atención con el año y una secuencia (`seq_atencion`), por ejemplo `2026-0001` |
+| `registrar_paciente(...)` | Modifica | Inserta el paciente con su número automático, quita espacios del nombre (`TRIM`) y deja la especie con mayúscula inicial (`INITCAP`) |
+| `resumen_por_especie()` | Estadística | Cuenta cuántos pacientes hay de cada especie |
+
+> `registrar_paciente` recibe 10 datos (y no 5 como el ejemplo de clases) para no perder la raza, el peso, los antecedentes, el dueño ni el historial que ya pide el formulario.
+
 ## 🔌 Endpoints
 
 | Método | Ruta | Respuesta |
 |---|---|---|
 | GET | `/api/pacientes` | `200` con la lista de pacientes |
-| POST | `/api/pacientes` | `201` con el paciente creado |
+| GET | `/api/pacientes/buscar?q=texto` | `200` con los pacientes cuyo nombre o especie contiene el texto |
+| GET | `/api/pacientes/resumen` | `200` con el total por especie, por ejemplo `[{"especie":"Gato","total":2}]` |
+| POST | `/api/pacientes` | `201` con el paciente creado y su N° de atención |
 | POST | `/api/pacientes` con especie no permitida | `400` con el mensaje de error |
 | Cualquiera | Si falla la conexión con la base de datos | `500` con el mensaje de error |
+
+> Las rutas `/buscar` y `/resumen` se declaran antes que cualquier ruta con `/:id`, para que Express no las confunda con un id.
 
 ## 📁 Estructura del Proyecto
 
 ```
 vetChiloe/                          # Repositorio de VetPenguin
+├── docs/
+│   └── bitacora-ia.md              # Bitácora de uso de IA generativa
 ├── public/
-│   ├── pacientes/                  # Fotos de los pacientes
-│   │   ├── Adelia.jpg
-│   │   ├── Barbijo.jpg
-│   │   ├── default.jpg
-│   │   └── Humboldt.jpg
+│   ├── pacientes/                  # Siluetas por especie
+│   │   ├── ave.png
+│   │   ├── conejo.png
+│   │   ├── gato.png
+│   │   ├── perro.png
+│   │   └── pinguino.png
 │   ├── favicon.svg
 │   └── icons.svg
 ├── server/                         # Backend (Node.js + Express)
@@ -130,7 +155,7 @@ vetChiloe/                          # Repositorio de VetPenguin
 │   │   ├── controllers/
 │   │   │   └── pacientes.controller.js
 │   │   ├── repositories/
-│   │   │   └── pacientes.repository.js  # Conexión a Neon y consultas SQL
+│   │   │   └── pacientes.repository.js  # Conexión a Neon y llamadas a las funciones SQL
 │   │   ├── routes/
 │   │   │   └── pacientes.routes.js
 │   │   ├── services/
@@ -140,10 +165,13 @@ vetChiloe/                          # Repositorio de VetPenguin
 │   ├── .env.example                # Modelo de las variables que van en .env
 │   ├── package-lock.json
 │   └── package.json
+├── sql/
+│   └── funciones.sql               # Funciones de PostgreSQL
 ├── src/                            # Frontend (React)
 │   ├── assets/
 │   ├── components/
 │   │   ├── BarraPestanas.jsx       # Pestañas de navegación
+│   │   ├── BuscadorPaciente.jsx    # Buscador reactivo
 │   │   ├── DetallePaciente.jsx     # Ventana con el detalle completo
 │   │   ├── FichaClinica.jsx        # Carnet giratorio
 │   │   ├── FormularioPaciente.jsx  # Registro y reingreso
@@ -151,6 +179,8 @@ vetChiloe/                          # Repositorio de VetPenguin
 │   │   └── TarjetaPaciente.jsx     # Anverso del carnet
 │   │                               # (cada componente tiene su .css)
 │   ├── data/
+│   │   ├── claseEspecie.js         # Color del badge según la especie
+│   │   ├── fotosEspecie.js         # Silueta por defecto según la especie
 │   │   ├── pacientesMock.js        # Datos de prueba de la primera etapa
 │   │   └── Razas.jsx               # Especies y razas del formulario
 │   ├── services/
@@ -184,7 +214,10 @@ vetChiloe/                          # Repositorio de VetPenguin
    git checkout estudiante/valentina-calderon
    ```
 
-2. Base de datos: en el SQL Editor de Neon se ejecuta `server/database/pacientes.sql`.
+2. Base de datos: en el SQL Editor de Neon se ejecuta primero `server/database/pacientes.sql` (crea la tabla) y después `sql/funciones.sql` (crea las funciones). Para comprobarlo:
+   ```sql
+   SELECT * FROM resumen_por_especie();
+   ```
 
 3. Variables de entorno: se crea `server/.env` copiando `server/.env.example` y poniendo la cadena de conexión de Neon:
    ```
@@ -198,7 +231,7 @@ vetChiloe/                          # Repositorio de VetPenguin
    npm install
    npm run dev
    ```
-   Queda funcionando en `http://localhost:3000/api/pacientes`.
+   Queda funcionando en `http://localhost:3000/api/pacientes`. Para probar las rutas nuevas: `http://localhost:3000/api/pacientes/buscar?q=po` y `http://localhost:3000/api/pacientes/resumen`.
 
 5. Frontend (terminal 2, desde la carpeta raíz):
    ```bash
@@ -213,6 +246,8 @@ vetChiloe/                          # Repositorio de VetPenguin
 
 ## ☁️ Despliegue
 
+**Base de datos en Neon:** cada vez que cambia `sql/funciones.sql`, hay que volver a ejecutarlo en el SQL Editor de Neon. Si no, la API responde "function ... does not exist".
+
 **Backend en Render (Web Service):**
 
 | Configuración | Valor |
@@ -225,8 +260,12 @@ vetChiloe/                          # Repositorio de VetPenguin
 
 **Frontend en Vercel:**
 
-* Se importa el proyecto desde GitHub, con la rama `estudiante/valentina-calderon`.
+* Se importa el proyecto desde GitHub, con la rama `estudiante/valentina-calderon` como Production Branch.
 * Vercel detecta que es un proyecto de Vite y lo publica como sitio estático.
 * En `src/services/pacienteService.js`, `URL_API` apunta a la URL pública de Render.
 
 > El archivo `.env` nunca se sube a GitHub (está en el `.gitignore`). En Render, la cadena de conexión se configura como variable de entorno desde su panel.
+
+## 🤖 Uso de IA generativa
+
+El uso de herramientas de IA en este proyecto está documentado en [`docs/bitacora-ia.md`](docs/bitacora-ia.md).
