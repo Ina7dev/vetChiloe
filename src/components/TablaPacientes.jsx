@@ -1,9 +1,5 @@
 import './TablaPacientes.css';
 import { fotoPaciente } from '../data/fotosEspecie';
-
-// devuelve la clase de la etiqueta segun la especie
-import './TablaPacientes.css';
-import { fotoPaciente } from '../data/fotosEspecie';
 import { claseEspecie } from '../data/claseEspecie';
 
 function TablaPacientes({ pacientes, onVerFicha, onVerDetalle, onEliminar }) {
