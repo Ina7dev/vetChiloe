@@ -18,23 +18,18 @@ async function buscar(texto) {
   return resultado.rows;
 }
 
+// llama a la funcion registrar_paciente, la base de datos pone el numero de atencion
 async function guardar(paciente) {
-  const query = `
-    INSERT INTO pacientes (nombre, numero_atencion, especie, raza, edad, peso,
-                           diagnostico, antecedentes, foto, dueno, alta, historial)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-    RETURNING *;
-  `;
-  const valores = [
-    paciente.nombre, paciente.numero_atencion, paciente.especie, paciente.raza,
-    paciente.edad, paciente.peso, paciente.diagnostico, paciente.antecedentes,
-    paciente.foto,
-    // dueno e historial son objetos, se pasan a texto json para guardarlos
-    paciente.dueno ? JSON.stringify(paciente.dueno) : null,
-    paciente.alta,
-    JSON.stringify(paciente.historial)
-  ];
-  const resultado = await pool.query(query, valores);
+  const resultado = await pool.query(
+    'SELECT * FROM registrar_paciente($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+    [
+      paciente.nombre, paciente.especie, paciente.raza, paciente.edad, paciente.peso,
+      paciente.diagnostico, paciente.antecedentes, paciente.foto,
+      // dueno e historial son objetos, se pasan a texto json para guardarlos
+      paciente.dueno ? JSON.stringify(paciente.dueno) : null,
+      JSON.stringify(paciente.historial)
+    ]
+  );
   return resultado.rows[0];
 }
 

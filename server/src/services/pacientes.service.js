@@ -13,17 +13,6 @@ async function buscarPacientes(texto) {
   return await repositorio.buscar(texto.trim());
 }
 
-// busca el numero mas alto que existe y le suma uno
-async function generarNumeroAtencion() {
-  const pacientes = await repositorio.obtenerTodos();
-  const usados = pacientes
-    .map((paciente) => Number(paciente.numero_atencion.split('-D')[1]))
-    // se saltan los numeros con otro formato, como el del seed (2026-B2)
-    .filter((numero) => !Number.isNaN(numero));
-  const siguiente = Math.max(0, ...usados) + 1;
-  return `${new Date().getFullYear()}-D${siguiente}`;
-}
-
 async function crearPaciente(datos) {
   const especie = (datos.especie || '').toLowerCase();
 
@@ -36,11 +25,9 @@ async function crearPaciente(datos) {
 
   const hoy = new Date().toLocaleDateString('es-CL');
 
-  // el id ya no se crea aqui, lo pone la base de datos (SERIAL)
+  // el id y el numero de atencion ya no se crean aqui, los pone la base de datos
   const nuevoPaciente = {
     ...datos,
-    numero_atencion: await generarNumeroAtencion(),
-    alta: false,
     historial: [
       { fecha: hoy, motivo: 'Ingreso', detalle: 'Registrado en la clínica.' }
     ]
