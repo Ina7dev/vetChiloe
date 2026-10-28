@@ -5,7 +5,7 @@ function fotoPorEspecie(especie) {
   if (texto.includes('perro') || texto.includes('canino')) return '/pacientes/perro.png';
   if (texto.includes('ping')) return '/pacientes/pinguino.png';
   if (texto.includes('conejo')) return '/pacientes/conejo.png';
-  if (texto.includes('ave')) return '/pacientes/ave.webp';
+  if (texto.includes('ave')) return '/pacientes/ave.png';
   return '/pacientes/default.jpg';
 }
 
